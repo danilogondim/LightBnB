@@ -99,10 +99,7 @@ const getAllReservations = (guest_id, limit = 10) => {
 
   return pool
     .query(query)
-    .then(res => {
-      console.log(res.rows)
-      return res.rows
-    })
+    .then(res => res.rows)
 }
 exports.getAllReservations = getAllReservations;
 
@@ -167,31 +164,30 @@ const getAllProperties = (options, limit = 10) => {
 }
 exports.getAllProperties = getAllProperties;
 
-// const getAllProperties = (options, limit = 10) => {
-//   const query = {
-//     text: `
-//       SELECT *
-//       FROM properties
-//       LIMIT $1
-//     `,
-//     values: [limit]
-//   }
-
-//   return pool
-//     .query(query)
-//     .then(res => res.rows);
-// }
-// exports.getAllProperties = getAllProperties;
-
 /**
  * Add a property to the database
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
-const addProperty = function (property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+
+const addProperty = property => {
+
+  const queryParams = [];
+  let queryCols = `INSERT INTO properties (`;
+  let queryValues = `VALUES (`;
+
+  for (const key in property) {
+    queryParams.push(property[key]);
+    queryCols += queryParams.length === 1 ? `${key}` : `, ${key}`;
+    queryValues += queryParams.length === 1 ? `$${queryParams.length}` : `, $${queryParams.length}`;
+  };
+
+  queryCols += ')\n'
+  queryValues += ') RETURNING *;'
+  const queryString = queryCols + queryValues;
+
+  return pool
+    .query(queryString, queryParams)
+    .then(res => res.rows);
 }
 exports.addProperty = addProperty;

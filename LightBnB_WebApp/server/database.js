@@ -35,7 +35,7 @@ const pool = new Pool({
 const getUserWithEmail = email => {
   const query = {
     text: `
-      SELECT name
+      SELECT *
       FROM users
       WHERE email = $1
     `,
@@ -43,7 +43,7 @@ const getUserWithEmail = email => {
   }
   return pool
     .query(query)
-    .then(res => res.rows[0].name);
+    .then(res => res.rows[0]);
 }
 exports.getUserWithEmail = getUserWithEmail;
 
@@ -52,8 +52,23 @@ exports.getUserWithEmail = getUserWithEmail;
  * @param {string} id The id of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithId = function (id) {
-  return Promise.resolve(users[id]);
+// const getUserWithId = function (id) {
+//   return Promise.resolve(users[id]);
+// }
+// exports.getUserWithId = getUserWithId;
+
+const getUserWithId = id => {
+  const query = {
+    text: `
+      SELECT *
+      FROM users
+      WHERE id = $1
+    `,
+    values: [id]
+  }
+  return pool
+    .query(query)
+    .then(res => res.rows[0]);
 }
 exports.getUserWithId = getUserWithId;
 
